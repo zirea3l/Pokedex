@@ -1,0 +1,48 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - v*.*.*
+  workflow_dispatch:
+
+jobs:
+  build_app:
+    name: Build Flutter APP
+    runs-on: ubuntu-latest
+    steps:
+      - name: ☕️ Setup Java
+        uses: actions/setup-java@v1
+        with:
+          java-version: "12.x"
+      - name: 📱️Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.0.0'
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v2
+      - name: 🧹 Clean
+        run: flutter clean
+      - name: ⬇️ Get dependencies
+        run: flutter pub get
+      - name: 🧪 Test
+        run: flutter test --coverage
+      - name: 🤖 Build Android (AAB)
+        run: |
+          flutter build appbundle --release
+          mv build/app/outputs/bundle/release/app-release.aab  build/app/outputs/bundle/release/pokedex.aab
+      - name: 🤖 Build Android (APK)
+        run: |
+          flutter build apk --split-per-abi
+          mv build/app/outputs/apk/release/app-armeabi-v7a-release.apk build/app/outputs/apk/release/pokedex-armeabi-v7a-release.apk
+          mv build/app/outputs/apk/release/app-arm64-v8a-release.apk build/app/outputs/apk/release/pokedex-arm64-v8a-release.apk
+          mv build/app/outputs/apk/release/app-x86_64-release.apk build/app/outputs/apk/release/pokedex-x86_64-release.apk
+      - name: ＠ Build WEB
+        run: |
+          flutter build web --web-renderer canvaskit --release
+          zip -r pokedex-web.zip build/web/
+      - name: 🚀 Create Github Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build/app/outputs/bundle/release/pokedex.aab,build/app/outputs/apk/release/pokedex-armeabi-v7a-release.apk,build/app/outputs/apk/release/pokedex-arm64-v8a-release.apk,build/app/outputs/apk/release/pokedex-x86_64-release.apk,pokedex-web.zip"
+          token: ${{ secrets.TOKEN }}

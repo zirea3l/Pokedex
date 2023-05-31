@@ -130,7 +130,7 @@ or [IntelliJ IDEA](https://www.jetbrains.com/pt-br/idea/).
 
 ```bash
 # Clone this repository
-$ git clone https://github.com/alanlgoncalves/pokedex
+$ git clone https://github.com/zirea3l/pokedex
 
 # Go to repository folder
 $ cd pokedex
